@@ -428,7 +428,7 @@ function hwConnect(){note('Connecting to the bridge…');const sock=new WebSocke
   sock.onclose=()=>{if(ws!==sock)return;ws=null;if(mode==='hw'){setMode('sim');note('Bridge disconnected. Showing simulated data. Start bridge.py again, then press Hardware.');}
     else note('Could not reach the bridge. Start bridge.py, then press Hardware.');};}
 
-$('#m-hw').onclick=()=>{if(!LOCAL){note('Hardware mode runs on your own PC. Download <b>bridge.py</b> and <b>interface_bench.html</b> into one folder, run <code>python bridge.py</code>, then open <code>http://localhost:8765</code> and press Hardware.');return;}
+$('#m-hw').onclick=()=>{if(!LOCAL){note('Hardware mode runs on your own PC. Download <b>bridge.py</b> and <b>index.html</b> into one folder, run <code>python bridge.py</code>, then open <code>http://localhost:8765</code> and press Hardware.');return;}
   if(mode!=='hw'&&!ws)hwConnect();};
 $('#m-sim').onclick=()=>{if(ws){const w=ws;ws=null;w.close();}note('');if(mode!=='sim')setMode('sim');};
 
