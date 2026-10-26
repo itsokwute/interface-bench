@@ -1,0 +1,440 @@
+<title>Interface Bench</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<!-- Interface Bench · Built by Nova Agentic -->
+<style>
+/* Layout: instrument bench. Protocol rail on top, scope + frame log on the left, controls on the right. */
+:root{
+  --bg:#eef1f5; --panel:#fbfcfe; --ink:#17212d; --muted:#5a6779; --line:#d3dae4; --grid:#e4e9f0;
+  --accent:#2456c9; --accent-ink:#ffffff;
+  --c-ecat:#c0266d; --c-tcp:#13798c; --c-usb:#6548c2; --c-i2c:#a8700f; --c-spi:#2c8550;
+  --ok:#24874f; --warn:#a87306; --bad:#cc3333; --off:#7d8898;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1520; --panel:#151f2d; --ink:#e2e8f0; --muted:#8e9bb0; --line:#26344a; --grid:#1d293a;
+  --accent:#6f9bff; --accent-ink:#0b1220;
+  --c-ecat:#ff5f9e; --c-tcp:#4cc6da; --c-usb:#a68cff; --c-i2c:#f0b54a; --c-spi:#5fd08d;
+  --ok:#4ade80; --warn:#fbbf24; --bad:#f87171; --off:#7a879b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1520; --panel:#151f2d; --ink:#e2e8f0; --muted:#8e9bb0; --line:#26344a; --grid:#1d293a;
+  --accent:#6f9bff; --accent-ink:#0b1220;
+  --c-ecat:#ff5f9e; --c-tcp:#4cc6da; --c-usb:#a68cff; --c-i2c:#f0b54a; --c-spi:#5fd08d;
+  --ok:#4ade80; --warn:#fbbf24; --bad:#f87171; --off:#7a879b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 24px}
+.wrap{max-width:1280px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px}
+.brand{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;margin-right:auto;min-width:0}
+h1{font:600 30px/1 var(--f-display);letter-spacing:.02em;margin:0;text-transform:uppercase}
+.sub{font:500 12px var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;color:var(--muted);font:500 13px var(--f-body);padding:7px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:500 13px var(--f-body);padding:7px 14px;border-radius:6px;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{margin:0;padding:10px 12px;border:1px dashed var(--muted);border-radius:6px;background:var(--panel);font-size:13px}
+.note code{font:12px var(--f-mono);user-select:all}
+.rail{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:980px){.rail{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(180px,1fr);overflow-x:auto;padding-bottom:4px}}
+.tile{text-align:left;display:grid;gap:3px;padding:12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);cursor:pointer;font:inherit;min-width:0}
+.tile:hover{border-color:var(--pc)}
+.tile[aria-pressed="true"]{border-color:var(--pc);box-shadow:inset 0 0 0 1px var(--pc)}
+.thead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tname{font:600 19px/1 var(--f-display);letter-spacing:.03em;display:flex;align-items:center;gap:8px}
+.trace{width:16px;height:9px;border:2px solid var(--pc);border-top:0;border-right:0;position:relative}
+.trace::after{content:"";position:absolute;left:4px;top:0;width:6px;height:7px;border:2px solid var(--pc);border-bottom:0}
+.pill{font:500 10.5px/1 var(--f-mono);padding:4px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.pill.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 15%,transparent)}
+.pill.off{color:var(--off);background:color-mix(in srgb,var(--off) 15%,transparent)}
+.tlabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:8px}
+.tval{font:600 32px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.tval small{font:500 13px var(--f-mono);color:var(--muted);margin-left:4px}
+.spark{width:100%;height:34px;display:block;margin-top:4px}
+.tfoot{font:11.5px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+.side{display:grid;gap:14px;grid-row:span 2;grid-column:2}
+.scope{grid-column:1}.log{grid-column:1}
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}.side,.scope,.log{grid-column:1;grid-row:auto}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;min-width:0}
+.ph{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;margin-bottom:10px}
+.ph .grow{margin-right:auto}
+h2{font:600 22px/1 var(--f-display);margin:0;text-transform:uppercase;letter-spacing:.03em}
+h3{font:600 11.5px var(--f-body);margin:0 0 10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ph h3{margin:0}
+.cap{font:12px var(--f-mono);color:var(--muted)}
+.chip{font:500 10.5px var(--f-mono);border:1px solid var(--line);padding:3px 7px;border-radius:4px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.chip.live{color:var(--ok);border-color:var(--ok)}
+#scope{width:100%;height:250px;display:block}
+.kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 0;border-top:1px solid var(--line);padding-top:12px}
+@media (max-width:560px){.kv{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kv div{min-width:0}
+.kv dt{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kv dd{margin:2px 0 0;font:500 14px var(--f-mono);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.cfg{display:grid;gap:10px}
+.f{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+input,select{font:13px var(--f-mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:7px 8px;width:100%;min-width:0}
+.txrow{display:flex;gap:8px}
+.txrow .btn{flex:none}
+.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
+.hint.err{color:var(--bad)}
+.range{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.range input{padding:0;accent-color:var(--accent);background:transparent;border:0}
+.range output{font:500 13px var(--f-mono);min-width:44px;text-align:right}
+.tablewrap{overflow:auto;max-height:340px}
+table{width:100%;border-collapse:collapse;font:12px/1.4 var(--f-mono);font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--panel);text-align:left;font:600 10.5px var(--f-body);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:5px 8px;border-bottom:1px solid var(--grid);vertical-align:top;white-space:nowrap}
+td.dec{white-space:normal;min-width:260px}
+tr.bad td{background:color-mix(in srgb,var(--bad) 9%,transparent)}
+td.st.ok{color:var(--ok)} td.st.bad{color:var(--bad)}
+td.dir.TX{color:var(--accent);font-weight:500}
+footer{font:11.5px var(--f-mono);color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 16px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Interface Bench</h1>
+      <span class="sub">EtherCAT · TCP/IP · USB · I²C · SPI</span>
+    </div>
+    <span class="chip" id="modechip">Simulated data</span>
+    <div class="seg" role="group" aria-label="Data source">
+      <button id="m-sim" aria-pressed="true">Simulated</button>
+      <button id="m-hw" aria-pressed="false">Hardware</button>
+    </div>
+    <button class="btn" id="run">Pause</button>
+  </header>
+
+  <p class="note" id="note" hidden></p>
+
+  <section class="rail" id="rail" aria-label="Protocols"></section>
+
+  <main class="main">
+    <section class="panel scope">
+      <div class="ph">
+        <h2 id="scopeTitle">EtherCAT</h2>
+        <span class="cap grow" id="scopeCap"></span>
+        <span class="chip" id="scopeChip">Simulated</span>
+      </div>
+      <canvas id="scope" aria-label="Signal view for the selected protocol"></canvas>
+      <dl class="kv" id="kv"></dl>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <h3>Configuration</h3>
+        <form class="cfg" id="cfg"></form>
+      </section>
+      <section class="panel">
+        <h3>Transmit</h3>
+        <form id="txf" class="txrow">
+          <input id="txin" autocomplete="off" aria-label="Bytes to send">
+          <button class="btn primary" type="submit">Send</button>
+        </form>
+        <p class="hint" id="txhint"></p>
+      </section>
+      <section class="panel">
+        <h3>Fault injection</h3>
+        <div class="range">
+          <label for="err" class="f" style="flex:1">Random error rate
+            <input type="range" id="err" min="0" max="10" step="0.5">
+          </label>
+          <output id="errv" for="err"></output>
+        </div>
+        <button class="btn" id="inject" style="width:100%">Inject fault</button>
+        <p class="hint" id="injhint">Simulated mode only.</p>
+      </section>
+    </aside>
+
+    <section class="panel log">
+      <div class="ph">
+        <h3 class="grow" id="logTitle">Frame log</h3>
+        <span class="cap" id="copyMsg"></span>
+        <button class="btn" id="copy">Copy CSV</button>
+        <button class="btn" id="clear">Clear</button>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Time</th><th>Dir</th><th>Bytes</th><th>Decoded</th><th>Status</th></tr></thead>
+          <tbody id="log"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Built by Nova Agentic</span>
+    <span>Simulated devices: 3-slave EtherCAT segment, SCPI instrument on port 5025, FT232H bulk endpoint, TMP102 sensor, W25Q128 flash</span>
+  </footer>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const tok=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+const hx=a=>(a||[]).map(x=>(x&255).toString(16).padStart(2,'0').toUpperCase()).join(' ');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ascii=s=>Array.from(s.slice(0,16)).map(c=>c.charCodeAt(0)&255);
+const LOCAL=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+const MONO='"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace';
+
+const ORDER=['ethercat','tcp','usb','i2c','spi'];
+const P={
+  ethercat:{label:'EtherCAT',color:'--c-ecat',mlabel:'Cycle jitter (p-p)',slabel:'Cycle time',unit:'µs',dec:1,err:0.5,inject:'Inject WKC mismatch',
+    cap:c=>`${c.slaves} slaves · ${c.cycle} µs cycle · LRW process data`,
+    fields:[{k:'cycle',label:'Cycle time',type:'select',opts:[[250,'250 µs'],[500,'500 µs'],[1000,'1 ms'],[2000,'2 ms']]},
+            {k:'slaves',label:'Slaves on segment',type:'number'},
+            {k:'ifname',label:'Network interface (hardware)',type:'text'}],
+    cfg:{cycle:'1000',slaves:'3',ifname:'eth0'},txPh:'01 00 FF',txHint:'Hex bytes written to slave 1 output PDO.'},
+  tcp:{label:'TCP/IP',color:'--c-tcp',mlabel:'Round-trip time',slabel:'Round-trip time',unit:'ms',dec:2,err:1,inject:'Inject packet loss',
+    cap:c=>`${c.host}:${c.port} · poll "${c.query}"`,
+    fields:[{k:'host',label:'Host',type:'text'},{k:'port',label:'Port',type:'number'},{k:'query',label:'Poll command (SCPI)',type:'text'}],
+    cfg:{host:'192.168.1.50',port:'5025',query:'MEAS:VOLT?'},txPh:'*IDN?',txHint:'ASCII command sent over the socket.'},
+  usb:{label:'USB',color:'--c-usb',mlabel:'Bulk IN throughput',slabel:'Throughput',unit:'MB/s',dec:1,err:0.5,inject:'Inject endpoint STALL',
+    cap:c=>`VID:PID ${c.vid}:${c.pid} · EP 0x${c.ep} · ${c.size} B packets`,
+    fields:[{k:'vid',label:'Vendor ID (hex)',type:'text'},{k:'pid',label:'Product ID (hex)',type:'text'},{k:'ep',label:'Bulk IN endpoint (hex)',type:'text'},
+            {k:'size',label:'Max packet size',type:'select',opts:[[64,'64 B · Full-Speed'],[512,'512 B · High-Speed']]}],
+    cfg:{vid:'0403',pid:'6014',ep:'81',size:'512'},txPh:'AA 55 01',txHint:'Hex bytes for a BULK OUT transfer to EP 0x02.'},
+  i2c:{label:'I²C',color:'--c-i2c',mlabel:'Transaction time',slabel:'Transaction time',unit:'µs',dec:1,err:1,inject:'Inject address NACK',
+    cap:c=>`${(+c.speed/1000)} kHz · target 0x${c.addr.toUpperCase()} · SCL / SDA`,
+    fields:[{k:'speed',label:'Clock',type:'select',opts:[[100000,'100 kHz · Standard'],[400000,'400 kHz · Fast'],[1000000,'1 MHz · Fast-mode Plus']]},
+            {k:'addr',label:'Target address (7-bit hex)',type:'text'},{k:'url',label:'FT232H URL (hardware)',type:'text'}],
+    cfg:{speed:'400000',addr:'48',url:'ftdi://ftdi:232h/1'},txPh:'01 60 A0',txHint:'Register, then data. 01 60 A0 writes the TMP102 config register.'},
+  spi:{label:'SPI',color:'--c-spi',mlabel:'Transaction time',slabel:'Transaction time',unit:'µs',dec:1,err:0.5,inject:'Inject MISO bit flip',
+    cap:c=>`Mode ${c.mode} · ${(+c.clk/1e6)} MHz SCLK · CS0`,
+    fields:[{k:'mode',label:'Mode (CPOL / CPHA)',type:'select',opts:[[0,'Mode 0 · 0 / 0'],[1,'Mode 1 · 0 / 1'],[2,'Mode 2 · 1 / 0'],[3,'Mode 3 · 1 / 1']]},
+            {k:'clk',label:'SCLK',type:'select',opts:[[1000000,'1 MHz'],[10000000,'10 MHz'],[30000000,'30 MHz']]},
+            {k:'url',label:'FT232H URL (hardware)',type:'text'}],
+    cfg:{mode:'0',clk:'10000000',url:'ftdi://ftdi:232h/1'},txPh:'9F 00 00 00',txHint:'Opcode, then bytes. 9F 00 00 00 reads the JEDEC ID.'}
+};
+
+const S={};
+function resetState(k){S[k]={frames:[],oks:[],series:[],count:0,bytes:0,logged:0,errors:0,force:false,err:S[k]?S[k].err:P[k].err};}
+ORDER.forEach(resetState);
+let sel='ethercat',mode='sim',running=true,ws=null;const caps={},capMsg={};
+let T0=performance.now();
+
+/* ---------- simulation ---------- */
+let temp=26.2,volt=1.80214,spiStep=0;
+const sci=v=>{let s=Math.abs(v).toExponential(5).toUpperCase().replace(/E([+-])(\d)$/,'E$10$2');return (v<0?'-':'+')+s;};
+const sim={
+  ethercat(c,f){const cyc=+c.cycle,n=Math.max(1,Math.min(32,+c.slaves|0)),exp=3*n,len=n*8;
+    const act=cyc+gauss()*cyc*0.004+(f?cyc*0.04:0),wkc=f?exp-3:exp,fb=14+2+10+len+2+4,cycles=250000/cyc;
+    const raw=[0x88,0xA4,(len+12)&255,0x10|((len+12)>>8),0x0C,Math.random()*256|0,0,0,1,0,len&255,len>>8];
+    return {dir:'RX',raw,ok:!f,metric:act,count:cycles,bytes:cycles*fb,
+      text:`LRW logical 0x00010000 · ${len} B process data · WKC ${wkc}/${exp}`+(f?' · a slave skipped the datagram':'')};},
+  tcp(c,f,cmd){const q=cmd||c.query;volt+=gauss()*0.0004;
+    const rtt=f?rnd(200,240):Math.max(0.12,0.36+gauss()*0.07+(Math.random()<0.05?rnd(0.4,1.6):0));
+    const resp=/IDN/i.test(q)?'NOVA,SIM-BENCH,0001,1.0':sci(volt);
+    return {dir:'RX',raw:ascii(q),ok:!f,metric:rtt,count:5,bytes:5*(q.length+resp.length+110),
+      text:f?`→ ${q} · TCP retransmission, reply after ${rtt.toFixed(0)} ms`:`→ ${q}  ← ${resp}`};},
+  usb(c,f){const size=+c.size,mb=f?0:(size===512?rnd(33,38.5):rnd(0.85,1.0));
+    return {dir:'RX',raw:Array.from({length:8},()=>Math.random()*256|0),ok:!f,metric:mb,count:Math.round(mb*1e6/4/size),bytes:mb*1e6/4,
+      text:f?`BULK IN EP 0x${c.ep} · STALL handshake, endpoint halted`:`BULK IN EP 0x${c.ep} · ${size} B packets · ACK`};},
+  i2c(c,f){const a=parseInt(c.addr,16)&0x7f,sp=+c.speed;
+    if(f)return {dir:'RX',kind:'nack',raw:[a<<1],ok:false,metric:10/sp*1e6,count:25,bytes:25,text:`Address 0x${hx([a])} NACK · no device acknowledged`};
+    temp+=gauss()*0.02;const r=Math.round(temp/0.0625)&0xfff,d1=r>>4,d2=(r&15)<<4;
+    return {dir:'RX',kind:'read',raw:[a<<1,0x00,(a<<1)|1,d1,d2],ok:true,metric:47/sp*1e6+rnd(0,12),count:25,bytes:125,
+      text:`Read reg 0x00 → ${hx([d1,d2])} = ${(r*0.0625).toFixed(2)} °C (TMP102)`};},
+  spi(c,f){const clk=+c.clk;spiStep=(spiStep+1)%4;let mosi,miso,text,n;
+    if(spiStep===0){mosi=[0x9F,0,0,0];miso=[0xFF,0xEF,0x40,0x18];text='JEDEC ID → EF 40 18 (Winbond W25Q128, 16 MB)';n=4;}
+    else if(spiStep===1){mosi=[0x05,0];miso=[0xFF,0x00];text='Status register 1 → 00 (ready, unprotected)';n=2;}
+    else{const ad=(Math.random()*0xffff|0)<<8;mosi=[0x03,ad>>16&255,ad>>8&255,0,0,0,0,0];
+      miso=[0xFF,0xFF,0xFF,0xFF,...Array.from({length:4},()=>Math.random()*256|0)];
+      text=`Read 0x${ad.toString(16).padStart(6,'0').toUpperCase()} · 256 B page`;n=260;}
+    if(f){miso=[...miso];const i=1+(Math.random()*(miso.length-1)|0);miso[i]^=1<<(Math.random()*8|0);text+=' · checksum mismatch, MISO bit flip';}
+    return {dir:'RX',kind:'xfer',raw:mosi,miso,ok:!f,metric:n*8/clk*1e6+rnd(2,9),count:50,bytes:50*n,text};}
+};
+
+function simTx(k,input){const c=P[k].cfg,b=parseHex(input);
+  if(k==='tcp'){ingest(k,{dir:'TX',raw:ascii(input),ok:true,count:1,bytes:input.length+1,text:`→ ${input}`});ingest(k,sim.tcp(c,false,input));return;}
+  if(k==='i2c'){const a=parseInt(c.addr,16)&0x7f;ingest(k,{dir:'TX',kind:'write',raw:[a<<1,...b],ok:true,count:1,bytes:b.length+1,
+    text:`Write to 0x${hx([a])} · reg ${hx([b[0]])}${b.length>1?' ← '+hx(b.slice(1)):''} · all ACK`});return;}
+  if(k==='spi'){const mi=b.map((_,i)=>i===0?0xFF:(b[0]===0x9F?[0,0xEF,0x40,0x18][i]??0xFF:Math.random()*256|0));
+    ingest(k,{dir:'TX',kind:'xfer',raw:b,miso:mi,ok:true,count:1,bytes:b.length,text:`Transfer ${b.length} B · MOSI ${hx(b)} · MISO ${hx(mi)}`});return;}
+  if(k==='ethercat'){ingest(k,{dir:'TX',raw:[0x88,0xA4,0x02,0x00,0x01,0x00,...b],ok:true,count:1,bytes:b.length+30,text:`FPWR slave 1 · output PDO ← ${hx(b)} · WKC 1/1`});return;}
+  if(k==='usb'){ingest(k,{dir:'TX',raw:b,ok:true,count:1,bytes:b.length,text:`BULK OUT EP 0x02 · ${b.length} B · ACK`});}
+}
+
+function parseHex(s){const t=s.trim().split(/[\s,]+/).filter(Boolean);if(!t.length)return null;
+  const out=[];for(const x of t){if(!/^(0x)?[0-9a-f]{1,2}$/i.test(x))return null;out.push(parseInt(x.replace(/^0x/i,''),16));}return out;}
+
+function ingest(k,fr){const s=S[k];if(!s)return;
+  fr.t=fr.t??(performance.now()-T0);
+  s.frames.unshift(fr);if(s.frames.length>200)s.frames.pop();
+  s.oks.push(!!fr.ok);if(s.oks.length>80)s.oks.shift();
+  if(typeof fr.metric==='number'&&isFinite(fr.metric)&&fr.dir!=='TX'){s.series.push(fr.metric);if(s.series.length>120)s.series.shift();}
+  s.count+=fr.count||1;s.bytes+=fr.bytes||(fr.raw||[]).length;s.logged++;if(!fr.ok)s.errors++;}
+
+function simStep(t){ORDER.forEach(k=>{const s=S[k];const f=s.force||Math.random()<s.err/100;s.force=false;const fr=sim[k](P[k].cfg,f);if(t!=null)fr.t=t;ingest(k,fr);});}
+
+/* ---------- drawing ---------- */
+function fit(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;const w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,r.width,r.height);return [c,r.width,r.height];}
+function rgba(col,a){if(col.startsWith('#')){let h=col.slice(1);if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}return col;}
+
+function spark(cv,data,col){const [c,w,h]=fit(cv);if(data.length<2)return;
+  const mn=Math.min(...data),mx=Math.max(...data),sp=(mx-mn)||1;const X=i=>2+i/(data.length-1)*(w-6),Y=v=>h-3-(v-mn)/sp*(h-7);
+  c.beginPath();data.forEach((v,i)=>i?c.lineTo(X(i),Y(v)):c.moveTo(X(i),Y(v)));c.strokeStyle=col;c.lineWidth=1.5;c.lineJoin='round';c.stroke();
+  c.lineTo(X(data.length-1),h);c.lineTo(X(0),h);c.closePath();c.fillStyle=rgba(col,.13);c.fill();
+  c.beginPath();c.arc(X(data.length-1),Y(data[data.length-1]),2.5,0,7);c.fillStyle=col;c.fill();}
+
+function seriesChart(cv,data,col,unit,dec,nominal){const [c,w,h]=fit(cv);const L=60,R=14,Tp=14,B=24;const ink=tok('--muted'),grid=tok('--grid');
+  c.font=`11px ${MONO}`;
+  if(data.length<2){c.fillStyle=ink;c.fillText('Waiting for frames…',L,h/2);return;}
+  let mn=Math.min(...data),mx=Math.max(...data);if(nominal!=null){mn=Math.min(mn,nominal);mx=Math.max(mx,nominal);}
+  let sp=(mx-mn)||Math.abs(mx)*0.1||1;mn-=sp*0.15;mx+=sp*0.15;sp=mx-mn;if(unit!=='µs'&&mn<0&&Math.min(...data)>=0)mn=0,sp=mx-mn;
+  const X=i=>L+i/(data.length-1)*(w-L-R),Y=v=>Tp+(1-(v-mn)/sp)*(h-Tp-B);
+  c.textAlign='right';c.textBaseline='middle';
+  for(let g=0;g<=4;g++){const v=mn+sp*g/4,y=Y(v);c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(L,y);c.lineTo(w-R,y);c.stroke();c.fillStyle=ink;c.fillText(v.toFixed(dec),L-8,y);}
+  c.textBaseline='alphabetic';c.textAlign='left';c.fillText(`−${(data.length*0.25).toFixed(0)} s`,L,h-6);c.textAlign='right';c.fillText('now',w-R,h-6);
+  c.textAlign='left';c.fillText(unit,4,Tp+4);
+  if(nominal!=null){c.setLineDash([5,4]);c.strokeStyle=ink;c.beginPath();c.moveTo(L,Y(nominal));c.lineTo(w-R,Y(nominal));c.stroke();c.setLineDash([]);
+    c.fillStyle=ink;c.fillText('nominal',L+6,Y(nominal)-5);}
+  c.beginPath();data.forEach((v,i)=>i?c.lineTo(X(i),Y(v)):c.moveTo(X(i),Y(v)));c.strokeStyle=col;c.lineWidth=1.75;c.lineJoin='round';c.stroke();
+  c.lineTo(X(data.length-1),h-B);c.lineTo(X(0),h-B);c.closePath();c.fillStyle=rgba(col,.12);c.fill();
+  const lx=X(data.length-1),ly=Y(data[data.length-1]);c.beginPath();c.arc(lx,ly,3.5,0,7);c.fillStyle=col;c.fill();}
+
+function timing(cv,rows,marks,col){const [c,w,h]=fit(cv);const ink=tok('--muted'),grid=tok('--grid');c.font=`11px ${MONO}`;
+  if(!rows||!rows[0].data.length){c.fillStyle=ink;c.fillText('Waiting for a transaction…',60,h/2);return;}
+  const L=58,R=10,N=rows[0].data.length,sw=(w-L-R)/N,rh=h/rows.length;
+  rows.forEach((r,ri)=>{const top=ri*rh+18,bot=(ri+1)*rh-8;
+    c.strokeStyle=grid;c.lineWidth=1;c.beginPath();c.moveTo(L,bot+4);c.lineTo(w-R,bot+4);c.stroke();
+    c.fillStyle=ink;c.textAlign='left';c.textBaseline='middle';c.fillText(r.name,4,(top+bot)/2);
+    c.beginPath();r.data.forEach((v,i)=>{const y=v?top:bot,x=L+i*sw;if(i===0)c.moveTo(x,y);else c.lineTo(x,y);c.lineTo(x+sw,y);});
+    c.strokeStyle=r.data_?col:(r.clock?ink:col);c.lineWidth=1.6;c.stroke();});
+  c.textBaseline='alphabetic';c.textAlign='left';
+  marks.forEach(m=>{const top=m.row*rh+18;c.fillStyle=m.text==='N'?tok('--bad'):ink;c.fillText(m.text,L+m.i*sw+2,top-5);});}
+
+function i2cRows(f){const a=f.raw||[];const scl=[1,1],sda=[1,1],mk=[];const push=(s,d)=>{scl.push(s);sda.push(d);};
+  const start=re=>{if(re){push(0,1);push(1,1);}push(1,0);push(0,0);};
+  const bit=b=>{push(0,b);push(1,b);};
+  const byte=(v,ack,l)=>{mk.push({row:1,i:scl.length,text:l});for(let k=7;k>=0;k--)bit(v>>k&1);mk.push({row:1,i:scl.length,text:ack?'A':'N'});bit(ack?0:1);};
+  const stop=()=>{push(0,0);push(1,0);push(1,1);push(1,1);};
+  const ad=v=>`${hx([v])} ${v&1?'R':'W'}`;
+  start(false);
+  if(f.kind==='nack'){byte(a[0],0,ad(a[0]));}
+  else if(f.kind==='read'){byte(a[0],1,ad(a[0]));byte(a[1],1,'REG '+hx([a[1]]));start(true);byte(a[2],1,ad(a[2]));
+    const d=a.slice(3,7);d.forEach((v,i)=>byte(v,i<d.length-1,hx([v])));}
+  else{byte(a[0],1,ad(a[0]));a.slice(1,6).forEach(v=>byte(v,1,hx([v])));}
+  stop();
+  return [[{name:'SCL',data:scl,clock:true},{name:'SDA',data:sda}],mk];}
+
+function spiRows(f,mode){const cpol=(mode>>1)&1,cpha=mode&1;const mo=(f.raw||[]).slice(0,4),mi=(f.miso||[]).slice(0,4);
+  const cs=[],ck=[],a=[],b=[],mk=[];const push=(x,k,m,n)=>{cs.push(x);ck.push(k);a.push(m);b.push(n);};
+  push(1,cpol,1,1);push(0,cpol,1,1);
+  mo.forEach((v,j)=>{const m=mi[j]??0xFF;mk.push({row:2,i:cs.length,text:hx([v])});mk.push({row:3,i:cs.length,text:hx([m])});
+    for(let k=7;k>=0;k--){const x=v>>k&1,y=m>>k&1;const k1=cpha?1-cpol:cpol;push(0,k1,x,y);push(0,1-k1,x,y);}});
+  push(0,cpol,1,1);push(1,cpol,1,1);
+  return [[{name:'CS',data:cs,clock:true},{name:'SCLK',data:ck,clock:true},{name:'MOSI',data:a},{name:'MISO',data:b}],mk];}
+
+/* ---------- UI ---------- */
+const rail=$('#rail');
+ORDER.forEach(k=>{const p=P[k];const b=document.createElement('button');b.className='tile';b.dataset.k=k;b.style.setProperty('--pc',`var(${p.color})`);
+  b.setAttribute('aria-pressed',k===sel);
+  b.innerHTML=`<span class="thead"><span class="tname"><i class="trace" aria-hidden="true"></i>${p.label}</span><span class="pill ok" data-r="pill">Link OK</span></span>
+  <span class="tlabel">${p.mlabel}</span><span class="tval"><b data-r="val">–</b><small>${p.unit}</small></span>
+  <canvas class="spark" data-r="spark" aria-hidden="true"></canvas><span class="tfoot" data-r="foot"></span>`;
+  b.onclick=()=>select(k);rail.appendChild(b);});
+
+function errPct(k){const o=S[k].oks;if(!o.length)return 0;return o.filter(x=>!x).length/o.length*100;}
+function status(k){if(mode==='hw'&&!caps[k])return ['off','No device'];if(!running)return ['off','Paused'];
+  if(!S[k].frames.length)return ['off','Idle'];const r=errPct(k);return r<2?['ok','Link OK']:r<8?['warn','Degraded']:['bad','Faulted'];}
+function primary(k){const s=S[k].series;if(!s.length)return null;if(k==='ethercat'){const w=s.slice(-40);return Math.max(...w)-Math.min(...w);}return s[s.length-1];}
+const fmtN=n=>n>=1e9?(n/1e9).toFixed(2)+' G':n>=1e6?(n/1e6).toFixed(2)+' M':n>=1e4?(n/1e3).toFixed(1)+' k':Math.round(n).toLocaleString();
+const fmtB=n=>n>=1e9?(n/1e9).toFixed(2)+' GB':n>=1e6?(n/1e6).toFixed(2)+' MB':n>=1e3?(n/1e3).toFixed(1)+' kB':Math.round(n)+' B';
+
+function updateTile(k){const el=rail.querySelector(`[data-k="${k}"]`),p=P[k],s=S[k];const [cls,txt]=status(k);
+  const pill=el.querySelector('[data-r="pill"]');pill.className='pill '+cls;pill.textContent=txt;
+  const v=primary(k);el.querySelector('[data-r="val"]').textContent=v==null?'–':v.toFixed(p.dec);
+  el.querySelector('[data-r="foot"]').textContent=`${fmtN(s.count)} frames · ${(s.logged?s.errors/s.logged*100:0).toFixed(1)}% err`;
+  spark(el.querySelector('[data-r="spark"]'),s.series.slice(-60),tok(p.color));}
+
+function drawScope(){const k=sel,p=P[k],s=S[k],col=tok(p.color),cv=$('#scope');
+  $('#scopeCap').textContent=p.cap(p.cfg);
+  if(k==='i2c'||k==='spi'){const f=s.frames.find(x=>x.kind);if(!f){timing(cv,null,[],col);return;}
+    const [rows,mk]=k==='i2c'?i2cRows(f):spiRows(f,+p.cfg.mode);timing(cv,rows,mk,col);}
+  else seriesChart(cv,s.series,col,p.unit,p.dec,k==='ethercat'?+p.cfg.cycle:null);}
+
+function renderKV(){const k=sel,p=P[k],s=S[k],d=s.series;const st=d.length?[Math.min(...d),d.reduce((a,b)=>a+b,0)/d.length,Math.max(...d)]:null;
+  const items=[['Frames',fmtN(s.count)],['Data moved',fmtB(s.bytes)],['Error rate',`${(s.logged?s.errors/s.logged*100:0).toFixed(2)} %`],
+    [`${p.slabel} min / avg / max`,st?st.map(x=>x.toFixed(p.dec)).join(' / ')+' '+p.unit:'–']];
+  $('#kv').innerHTML=items.map(([a,b])=>`<div><dt>${a}</dt><dd>${b}</dd></div>`).join('');}
+
+function renderLog(){const s=S[sel];$('#logTitle').textContent=`Frame log · ${P[sel].label}`;
+  $('#log').innerHTML=s.frames.slice(0,60).map(f=>{const raw=f.raw||[];const b=hx(raw.slice(0,10))+(raw.length>10?' …':'');
+    return `<tr class="${f.ok?'':'bad'}"><td>${(f.t/1000).toFixed(3)} s</td><td class="dir ${f.dir}">${f.dir}</td><td>${b}</td><td class="dec">${esc(f.text)}</td><td class="st ${f.ok?'ok':'bad'}">${f.ok?'OK':'ERROR'}</td></tr>`;}).join('')
+    ||`<tr><td colspan="5" class="dec">No frames yet. Press Send or wait for the next poll.</td></tr>`;}
+
+function renderCfg(){const p=P[sel];const f=$('#cfg');
+  f.innerHTML=p.fields.map(fd=>{const id=`cfg-${sel}-${fd.k}`;const v=esc(p.cfg[fd.k]);
+    const ctl=fd.type==='select'?`<select id="${id}" data-k="${fd.k}">${fd.opts.map(([ov,ol])=>`<option value="${ov}"${String(ov)===String(p.cfg[fd.k])?' selected':''}>${ol}</option>`).join('')}</select>`
+      :`<input id="${id}" data-k="${fd.k}" type="${fd.type==='number'?'number':'text'}" value="${v}" autocomplete="off">`;
+    return `<label class="f" for="${id}">${fd.label}${ctl}</label>`;}).join('');
+  $('#txin').placeholder=p.txPh;$('#txhint').textContent=p.txHint;$('#txhint').classList.remove('err');
+  $('#err').value=S[sel].err;$('#errv').textContent=S[sel].err.toFixed(1)+' %';$('#inject').textContent=p.inject;sideState();}
+
+$('#cfg').addEventListener('change',e=>{const k=e.target.dataset.k;if(!k)return;P[sel].cfg[k]=e.target.value;
+  if(sel==='ethercat'&&k==='cycle')S.ethercat.series=[];
+  if(mode==='hw'&&ws&&ws.readyState===1)ws.send(JSON.stringify({type:'config',proto:sel,cfg:P[sel].cfg}));render();});
+$('#cfg').addEventListener('submit',e=>e.preventDefault());
+
+$('#txf').addEventListener('submit',e=>{e.preventDefault();const v=$('#txin').value.trim()||P[sel].txPh;const h=$('#txhint');
+  if(sel!=='tcp'&&!parseHex(v)){h.textContent='Enter hex bytes separated by spaces, for example 01 A0 FF.';h.classList.add('err');return;}
+  h.textContent=P[sel].txHint;h.classList.remove('err');
+  if(mode==='hw'){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'tx',proto:sel,data:v}));}else simTx(sel,v);render();});
+
+$('#err').addEventListener('input',e=>{S[sel].err=+e.target.value;$('#errv').textContent=S[sel].err.toFixed(1)+' %';});
+$('#inject').onclick=()=>{S[sel].force=true;};
+$('#clear').onclick=()=>{resetState(sel);render();};
+$('#copy').onclick=()=>{const rows=[['time_s','dir','bytes','decoded','status'],...S[sel].frames.map(f=>[(f.t/1000).toFixed(3),f.dir,hx(f.raw),f.text,f.ok?'OK':'ERROR'])];
+  const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');const m=$('#copyMsg');
+  try{navigator.clipboard.writeText(csv).then(()=>{m.textContent=`Copied ${rows.length-1} rows`;},()=>{m.textContent='Copy blocked by the browser';});}catch(_){m.textContent='Copy blocked by the browser';}};
+$('#run').onclick=()=>{running=!running;$('#run').textContent=running?'Pause':'Resume';if(mode==='hw'&&ws&&ws.readyState===1)ws.send(JSON.stringify({type:'pause',on:!running}));render();};
+
+function select(k){sel=k;rail.querySelectorAll('.tile').forEach(t=>t.setAttribute('aria-pressed',t.dataset.k===k));$('#scopeTitle').textContent=P[k].label;renderCfg();render();}
+function sideState(){const hw=mode==='hw';$('#err').disabled=hw;$('#inject').disabled=hw;$('#injhint').textContent=hw?'Off in hardware mode. Real faults show up in the log.':'Forces the next frame to fail, or set a random rate.';
+  $('#scopeChip').textContent=hw?(caps[sel]?'Live':'No device'):'Simulated';$('#scopeChip').className='chip'+(hw&&caps[sel]?' live':'');}
+function note(html){const n=$('#note');if(html){n.innerHTML=html;n.hidden=false;}else n.hidden=true;}
+
+function setMode(m){mode=m;$('#m-sim').setAttribute('aria-pressed',m==='sim');$('#m-hw').setAttribute('aria-pressed',m==='hw');
+  $('#modechip').textContent=m==='sim'?'Simulated data':'Live hardware';$('#modechip').className='chip'+(m==='hw'?' live':'');
+  ORDER.forEach(resetState);T0=performance.now();sideState();render();}
+
+function hwConnect(){note('Connecting to the bridge…');const sock=new WebSocket(`ws://${location.host}/ws`);ws=sock;
+  sock.onopen=()=>{setMode('hw');ORDER.forEach(k=>{caps[k]=false;sock.send(JSON.stringify({type:'config',proto:k,cfg:P[k].cfg}));});
+    note('Bridge connected. Protocols without a device show <b>No device</b>; hover a tile to see why.');};
+  sock.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(_){return;}
+    if(m.type==='frame')ingest(m.proto,m.frame);
+    else if(m.type==='caps'){caps[m.proto]=!!m.ok;capMsg[m.proto]=m.msg||'';const t=rail.querySelector(`[data-k="${m.proto}"]`);if(t)t.title=capMsg[m.proto];sideState();}};
+  sock.onclose=()=>{if(ws!==sock)return;ws=null;if(mode==='hw'){setMode('sim');note('Bridge disconnected. Showing simulated data. Start bridge.py again, then press Hardware.');}
+    else note('Could not reach the bridge. Start bridge.py, then press Hardware.');};}
+
+$('#m-hw').onclick=()=>{if(!LOCAL){note('Hardware mode runs on your own PC. Download <b>bridge.py</b> and <b>interface_bench.html</b> into one folder, run <code>python bridge.py</code>, then open <code>http://localhost:8765</code> and press Hardware.');return;}
+  if(mode!=='hw'&&!ws)hwConnect();};
+$('#m-sim').onclick=()=>{if(ws){const w=ws;ws=null;w.close();}note('');if(mode!=='sim')setMode('sim');};
+
+function render(){ORDER.forEach(updateTile);drawScope();renderKV();renderLog();}
+
+/* warm-up so the bench opens with 15 s of history */
+T0=performance.now()-15000;for(let i=0;i<60;i++)simStep(i*250);
+renderCfg();render();
+setInterval(()=>{if(running&&mode==='sim')simStep();render();},250);
+window.addEventListener('resize',()=>render());
+if(window.matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',render);
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
